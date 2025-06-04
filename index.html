@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>猜顏色遊戲</title>
   <link rel="icon" type="image/png" href="https://family35.com/wp-content/uploads/2018/04/1024px-Farbkreis_Itten_1961.svg_.png" />
   <style>
@@ -72,13 +72,13 @@
       background-color: white;
     }
     .buttons {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      grid-gap: 10px;
+      display: flex;
+      flex-wrap: wrap;
       justify-content: center;
       align-items: center;
+      gap: 10px;
       margin-bottom: 20px;
-      max-width: 320px;
+      max-width: 90vw;
     }
     .colorBtn {
       width: 60px;
@@ -86,6 +86,7 @@
       border: none;
       border-radius: 50%;
       cursor: pointer;
+      flex-shrink: 0;
     }
     #undoBtn {
       background: none;
@@ -94,7 +95,6 @@
       cursor: pointer;
       display: none;
       margin-right: 10px;
-      grid-column: span 1;
     }
     #topBackBtn {
       position: absolute;
