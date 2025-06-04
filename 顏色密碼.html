@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>猜顏色遊戲</title>
+  <link rel="icon" type="image/png" href="https://family35.com/wp-content/uploads/2018/04/1024px-Farbkreis_Itten_1961.svg_.png">
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+    #promptBox {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      position: relative;
+      min-width: 300px;
+    }
+    #promptText {
+      margin-bottom: 20px;
+      white-space: pre-line;
+    }
+    .selectCountBtn {
+      margin: 5px;
+      padding: 8px 16px;
+      border: none;
+      background-color: #2196F3;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #continueBtn, #exitBtn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    #continueBtn {
+      background-color: #4CAF50;
+      color: white;
+    }
+    #exitBtn {
+      background-color: #f44336;
+      color: white;
+    }
+    #gameArea {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .slots {
+      display: flex;
+      margin: 20px 0;
+    }
+    .slot {
+      width: 60px;
+      height: 60px;
+      margin: 0 10px;
+      border: 2px solid #ccc;
+      border-radius: 50%;
+      background-color: white;
+      background-size: cover;
+      background-position: center;
+    }
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .colorBtn {
+      width: 60px;
+      height: 60px;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    #result {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background-color: rgba(0,0,0,0.7);
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+    }
+    #undoBtn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      display: none;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay">
+    <div id="promptBox">
+      <div id="promptText">請選擇要猜幾個顏色？</div>
+      <div id="countButtons">
+        <button class="selectCountBtn" onclick="initGame(3)">3 個</button>
+        <button class="selectCountBtn" onclick="initGame(4)">4 個</button>
+        <button class="selectCountBtn" onclick="initGame(5)">5 個</button>
+        <button class="selectCountBtn" onclick="initGame(6)">6 個</button>
+        <button class="selectCountBtn" onclick="initGame(7)">7 個</button>
+      </div>
+      <div id="endButtons" style="display: none;">
+        <button id="continueBtn" onclick="resetForNewGame()">繼續</button>
+        <button id="exitBtn" onclick="window.close()">結束</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="gameArea">
+    <div class="slots" id="slots"></div>
+    <div class="buttons">
+      <button id="undoBtn" onclick="undoColor()">⟵</button>
+      <button class="colorBtn" style="background-color:red" onclick="chooseColor('R')"></button>
+      <button class="colorBtn" style="background-color:orange" onclick="chooseColor('O')"></button>
+      <button class="colorBtn" style="background-color:green" onclick="chooseColor('G')"></button>
+      <button class="colorBtn" style="background-color:blue" onclick="chooseColor('B')"></button>
+      <button class="colorBtn" style="background-color:purple" onclick="chooseColor('P')"></button>
+      <button class="colorBtn" style="background-color:black" onclick="chooseColor('K')"></button>
+      <button class="colorBtn" style="background-color:yellow" onclick="chooseColor('Y')"></button>
+    </div>
+  </div>
+
+  <div id="result"></div>
+
+  <script>
+    const colors = "ROGBPKY";
+    const colorMap = {
+      R: "red", O: "orange", G: "green", B: "blue",
+      P: "purple", K: "black", Y: "yellow"
+    };
+    const colorNameMap = {
+      R: "紅", O: "橙", G: "綠", B: "藍",
+      P: "紫", K: "黑", Y: "黃"
+    };
+
+    let answer = [];
+    let currentGuess = [];
+    let n = 0;
+
+    function initGame(count) {
+      n = count;
+      answer = [];
+      currentGuess = [];
+      for (let i = 0; i < n; i++) {
+        answer.push(colors[Math.floor(Math.random() * colors.length)]);
+      }
+      document.getElementById("overlay").style.display = "none";
+      document.getElementById("gameArea").style.display = "flex";
+      document.getElementById("result").innerText = "歡迎來到猜顏色遊戲，請點選顏色按鈕。";
+      document.getElementById("result").style.display = "block";
+      document.getElementById("undoBtn").style.display = "inline-block";
+      drawSlots();
+    }
+
+    function drawSlots() {
+      const slotsContainer = document.getElementById("slots");
+      slotsContainer.innerHTML = "";
+      for (let i = 0; i < n; i++) {
+        const div = document.createElement("div");
+        div.className = "slot";
+        slotsContainer.appendChild(div);
+      }
+    }
+
+    function chooseColor(colorCode) {
+      if (currentGuess.length >= n) return;
+      currentGuess.push(colorCode);
+      const slots = document.querySelectorAll(".slot");
+      slots[currentGuess.length - 1].style.backgroundColor = colorMap[colorCode];
+      
+      if (currentGuess.length === n) checkAnswer();
+    }
+
+    function undoColor() {
+      if (currentGuess.length === 0) return;
+      const slots = document.querySelectorAll(".slot");
+      currentGuess.pop();
+      slots[currentGuess.length].style.backgroundColor = "white";
+    }
+
+    function checkAnswer() {
+      let correct = 0;
+      for (let i = 0; i < n; i++) {
+        if (currentGuess[i] === answer[i]) correct++;
+      }
+
+      const guessStr = currentGuess.map(c => colorNameMap[c]).join("");
+      document.getElementById("result").innerText = `顏色：${guessStr}，答對${correct}個`;
+
+      if (correct === n) {
+        setTimeout(() => {
+          const answerStr = answer.map(c => colorNameMap[c]).join("");
+          document.getElementById("promptText").innerText = `恭喜你全猜對了！正確答案是：${answerStr}。\n要再玩一次嗎？`;
+          document.getElementById("countButtons").style.display = "none";
+          document.getElementById("endButtons").style.display = "block";
+          document.getElementById("overlay").style.display = "flex";
+          document.getElementById("gameArea").style.display = "none";
+          document.getElementById("result").style.display = "none";
+          document.getElementById("undoBtn").style.display = "none";
+        }, 1000);
+      } else {
+        setTimeout(() => {
+          currentGuess = [];
+          resetSlots();
+        }, 800);
+      }
+    }
+
+    function resetSlots() {
+      const slots = document.querySelectorAll(".slot");
+      slots.forEach(slot => slot.style.backgroundColor = "white");
+    }
+
+    function resetForNewGame() {
+      document.getElementById("promptText").innerText = "請選擇要猜幾個顏色？";
+      document.getElementById("countButtons").style.display = "block";
+      document.getElementById("endButtons").style.display = "none";
+      document.getElementById("overlay").style.display = "flex";
+    }
+  </script>
+</body>
+</html>
