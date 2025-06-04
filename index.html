@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>猜顏色遊戲</title>
-  <link rel="icon" type="image/png" href="https://family35.com/wp-content/uploads/2018/04/1024px-Farbkreis_Itten_1961.svg_.png">
+  <link rel="icon" type="image/png" href="https://family35.com/wp-content/uploads/2018/04/1024px-Farbkreis_Itten_1961.svg_.png" />
   <style>
     body {
       margin: 0;
@@ -31,36 +31,23 @@
       border-radius: 10px;
       text-align: center;
       box-shadow: 0 0 10px rgba(0,0,0,0.3);
-      position: relative;
       min-width: 300px;
     }
     #promptText {
       margin-bottom: 20px;
       white-space: pre-line;
     }
-    .selectCountBtn {
+    .selectCountBtn, #continueBtn {
       margin: 5px;
       padding: 8px 16px;
       border: none;
+      border-radius: 4px;
       background-color: #2196F3;
       color: white;
-      border-radius: 4px;
       cursor: pointer;
-    }
-    #continueBtn, #exitBtn {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin: 5px;
     }
     #continueBtn {
       background-color: #4CAF50;
-      color: white;
-    }
-    #exitBtn {
-      background-color: #f44336;
-      color: white;
     }
     #gameArea {
       display: none;
@@ -79,8 +66,6 @@
       border: 2px solid #ccc;
       border-radius: 50%;
       background-color: white;
-      background-size: cover;
-      background-position: center;
     }
     .buttons {
       display: flex;
@@ -97,6 +82,24 @@
       border-radius: 50%;
       cursor: pointer;
     }
+    #undoBtn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      display: none;
+      margin-right: 10px;
+    }
+    #topBackBtn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: none;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      display: none;
+    }
     #result {
       position: absolute;
       bottom: 20px;
@@ -108,17 +111,11 @@
       font-size: 14px;
       display: none;
     }
-    #undoBtn {
-      background: none;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-      display: none;
-      margin-right: 10px;
-    }
   </style>
 </head>
 <body>
+  <button id="topBackBtn" onclick="resetForNewGame()">返回選擇</button>
+
   <div id="overlay">
     <div id="promptBox">
       <div id="promptText">請選擇要猜幾個顏色？</div>
@@ -130,8 +127,7 @@
         <button class="selectCountBtn" onclick="initGame(7)">7 個</button>
       </div>
       <div id="endButtons" style="display: none;">
-        <button id="continueBtn" onclick="resetForNewGame()">繼續</button>
-        <button id="exitBtn" onclick="window.close()">結束</button>
+        <button id="continueBtn" onclick="resetForNewGame()">重新開始</button>
       </div>
     </div>
   </div>
@@ -179,6 +175,7 @@
       document.getElementById("result").innerText = "歡迎來到猜顏色遊戲，請點選顏色按鈕。";
       document.getElementById("result").style.display = "block";
       document.getElementById("undoBtn").style.display = "inline-block";
+      document.getElementById("topBackBtn").style.display = "inline-block";
       drawSlots();
     }
 
@@ -197,7 +194,7 @@
       currentGuess.push(colorCode);
       const slots = document.querySelectorAll(".slot");
       slots[currentGuess.length - 1].style.backgroundColor = colorMap[colorCode];
-      
+
       if (currentGuess.length === n) checkAnswer();
     }
 
@@ -227,6 +224,7 @@
           document.getElementById("gameArea").style.display = "none";
           document.getElementById("result").style.display = "none";
           document.getElementById("undoBtn").style.display = "none";
+          document.getElementById("topBackBtn").style.display = "none";
         }, 1000);
       } else {
         setTimeout(() => {
@@ -246,6 +244,13 @@
       document.getElementById("countButtons").style.display = "block";
       document.getElementById("endButtons").style.display = "none";
       document.getElementById("overlay").style.display = "flex";
+      document.getElementById("topBackBtn").style.display = "none";
+      document.getElementById("gameArea").style.display = "none";
+      document.getElementById("result").style.display = "none";
+      document.getElementById("result").innerText = "";
+      document.getElementById("slots").innerHTML = "";
+      currentGuess = [];
+      answer = [];
     }
   </script>
 </body>
